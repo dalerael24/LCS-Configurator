@@ -1,0 +1,960 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LCS Project Quote Tool</title>
+  <meta name="description" content="LiquidCool Solutions project quote configurator for ZP server solutions." />
+  <style>
+    :root{
+      --lcs-blue:#0068b7;
+      --lcs-blue-dark:#003b73;
+      --lcs-navy:#071b35;
+      --lcs-green:#63b43f;
+      --lcs-green-soft:#eef8e9;
+      --text:#0f172a;
+      --muted:#5b677a;
+      --line:#dbe3ee;
+      --field:#f8fafc;
+      --card:#ffffff;
+      --bg:#f5f8fb;
+      --danger:#c62828;
+      --warning:#9a6700;
+      --shadow:0 12px 30px rgba(10, 31, 68, .08);
+      --radius:16px;
+      --radius-sm:10px;
+      --max:1500px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      color:var(--text);
+      background:linear-gradient(180deg,#fff 0%,var(--bg) 22%,#fff 100%);
+      line-height:1.45;
+    }
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    a{color:var(--lcs-blue);text-decoration:none}
+
+    .app-header{
+      background:#fff;
+      border-bottom:1px solid var(--line);
+      position:sticky;
+      top:0;
+      z-index:20;
+      box-shadow:0 6px 18px rgba(15, 23, 42, .04);
+    }
+    .header-inner{
+      max-width:var(--max);
+      margin:0 auto;
+      padding:18px 28px;
+      display:flex;
+      justify-content:space-between;
+      gap:24px;
+      align-items:center;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:22px;
+      min-width:0;
+    }
+    .brand img{
+      width:260px;
+      max-width:42vw;
+      height:auto;
+      object-fit:contain;
+      display:block;
+    }
+    .brand-fallback{
+      display:none;
+      font-weight:800;
+      letter-spacing:.01em;
+      font-size:1.35rem;
+      color:var(--lcs-navy);
+    }
+    .divider{height:44px;width:1px;background:var(--line)}
+    .tool-title{font-weight:750;font-size:1.25rem;color:var(--lcs-navy);white-space:nowrap}
+    .tagline{font-weight:750;color:var(--lcs-navy);font-size:1rem;white-space:nowrap}
+    .tagline strong{color:var(--lcs-blue)}
+
+    .save-strip{
+      max-width:var(--max);
+      margin:0 auto;
+      padding:0 28px 14px;
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      gap:12px;
+      color:var(--muted);
+      font-size:.86rem;
+    }
+    .save-dot{width:8px;height:8px;border-radius:999px;background:var(--lcs-green);display:inline-block}
+    .clear-link{border:0;background:transparent;color:var(--lcs-blue);padding:0;font-weight:650}
+
+    main{max-width:var(--max);margin:0 auto;padding:26px 28px 96px}
+
+    .progress{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:18px;
+      align-items:center;
+      margin:0 0 26px;
+    }
+    .step-pill{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width:0;
+      color:var(--muted);
+      position:relative;
+    }
+    .step-pill:not(:last-child)::after{
+      content:"";
+      position:absolute;
+      left:70px;
+      right:-8px;
+      top:22px;
+      height:2px;
+      background:var(--line);
+      z-index:-1;
+    }
+    .step-pill.active:not(:last-child)::after,.step-pill.done:not(:last-child)::after{background:linear-gradient(90deg,var(--lcs-blue),var(--lcs-green))}
+    .step-number{
+      width:46px;height:46px;border-radius:999px;
+      display:grid;place-items:center;
+      border:2px solid #b7c2d0;
+      font-weight:800;
+      background:#fff;
+      flex:0 0 auto;
+    }
+    .step-pill.active .step-number{background:var(--lcs-blue);border-color:var(--lcs-blue);color:#fff;box-shadow:0 10px 20px rgba(0,104,183,.2)}
+    .step-pill.done .step-number{background:var(--lcs-green);border-color:var(--lcs-green);color:#fff}
+    .step-title{font-weight:800;color:var(--lcs-navy)}
+    .step-desc{font-size:.9rem;color:var(--muted)}
+
+    .page-title{
+      display:flex;
+      align-items:flex-start;
+      gap:18px;
+      margin:24px 0 18px;
+    }
+    .title-icon{
+      width:58px;height:58px;border-radius:14px;background:#eef6ff;color:var(--lcs-blue);
+      display:grid;place-items:center;flex:0 0 auto;
+    }
+    h1{margin:0;color:var(--lcs-navy);font-size:1.8rem;line-height:1.15}
+    h2{margin:0;color:var(--lcs-navy);font-size:1.05rem}
+    p{margin:0;color:var(--muted)}
+
+    .screen{display:none}
+    .screen.active{display:block;animation:fade .18s ease-out}
+    @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+    .card{
+      background:rgba(255,255,255,.94);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:0 6px 18px rgba(15,23,42,.035);
+      padding:22px;
+      margin-bottom:16px;
+    }
+    .card-head{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:16px;
+    }
+    .card-head svg{color:var(--lcs-blue);flex:0 0 auto}
+    .card-sub{font-size:.9rem;color:var(--muted);margin-top:2px}
+
+    .grid{display:grid;gap:16px}
+    .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .grid-6{grid-template-columns:repeat(6,minmax(0,1fr))}
+    .field{display:flex;flex-direction:column;gap:7px}
+    label{font-size:.88rem;font-weight:700;color:var(--lcs-navy)}
+    .req{color:var(--danger)}
+    input,select,textarea{
+      width:100%;
+      border:1px solid #cfd8e4;
+      background:var(--field);
+      border-radius:9px;
+      padding:11px 12px;
+      color:var(--text);
+      outline:none;
+      transition:border .15s, box-shadow .15s, background .15s;
+    }
+    textarea{min-height:82px;resize:vertical}
+    input:focus,select:focus,textarea:focus{
+      border-color:var(--lcs-blue);
+      box-shadow:0 0 0 4px rgba(0,104,183,.12);
+      background:#fff;
+    }
+    input[readonly],input:disabled,select:disabled{background:#eef2f7;color:#6b7280;cursor:not-allowed}
+    .error{border-color:var(--danger)!important;box-shadow:0 0 0 4px rgba(198,40,40,.11)!important}
+    .error-text{display:none;color:var(--danger);font-size:.82rem;font-weight:650;margin-top:-3px}
+    .error + .error-text,.error-text.show{display:block}
+
+    .radio-card-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}
+    .choice-card{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+      padding:18px 14px;
+      min-height:176px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      text-align:center;
+      gap:8px;
+      position:relative;
+      transition:all .15s ease;
+      user-select:none;
+    }
+    .choice-card:hover{border-color:#a5c7ea;box-shadow:0 10px 26px rgba(0,104,183,.08);transform:translateY(-1px)}
+    .choice-card input{position:absolute;opacity:0;pointer-events:none}
+    .choice-card .radio-dot{
+      width:18px;height:18px;border:2px solid #aab7c8;border-radius:999px;margin-top:auto;background:#fff;
+    }
+    .choice-card:has(input:checked){border-color:var(--lcs-blue);box-shadow:0 0 0 4px rgba(0,104,183,.11);background:linear-gradient(180deg,#fff,#f5fbff)}
+    .choice-card:has(input:checked) .radio-dot{border-color:var(--lcs-blue);box-shadow:inset 0 0 0 4px #fff;background:var(--lcs-blue)}
+    .choice-card h3{margin:4px 0 0;font-size:.96rem;color:var(--lcs-navy);line-height:1.2}
+    .choice-card p{font-size:.82rem;color:#4b5563;line-height:1.35}
+    .icon-blue{color:var(--lcs-blue)}
+    .icon-green{color:var(--lcs-green)}
+    .icon-purple{color:#6f42c1}
+    .icon-orange{color:#f97316}
+    .icon-teal{color:#3eb7b7}
+
+    .split-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch}
+    .scope-list{display:grid;gap:12px}
+    .scope-option{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:13px;
+      padding:15px;
+      display:grid;
+      grid-template-columns:58px 1fr 24px;
+      gap:14px;
+      align-items:center;
+      transition:all .15s ease;
+      position:relative;
+    }
+    .scope-option:hover{border-color:#b4d0ec;box-shadow:0 8px 20px rgba(15,23,42,.05)}
+    .scope-option input{position:absolute;opacity:0;pointer-events:none}
+    .scope-option:has(input:checked){border-color:var(--lcs-green);box-shadow:0 0 0 4px rgba(99,180,63,.13);background:linear-gradient(180deg,#fff,#f8fff5)}
+    .scope-title{font-weight:850;color:var(--lcs-navy)}
+    .scope-option p{font-size:.86rem;color:#4b5563;margin-top:2px}
+    .scope-check{width:18px;height:18px;border:2px solid #aab7c8;border-radius:999px}
+    .scope-option:has(input:checked) .scope-check{background:var(--lcs-green);border-color:var(--lcs-green);box-shadow:inset 0 0 0 4px #fff}
+
+    .optional-layout{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px;align-items:end}
+    .optional-layout .wide{grid-column:1/-1}
+
+    .configure-top{
+      display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:16px;
+    }
+    .btn{
+      border:1px solid transparent;
+      border-radius:10px;
+      padding:12px 18px;
+      font-weight:800;
+      display:inline-flex;align-items:center;gap:9px;
+      transition:all .15s ease;
+      background:#fff;
+      color:var(--lcs-blue);
+    }
+    .btn:hover{transform:translateY(-1px);box-shadow:0 10px 20px rgba(15,23,42,.08)}
+    .btn-primary{background:var(--lcs-blue);color:#fff;border-color:var(--lcs-blue)}
+    .btn-primary:hover{background:#005aa0}
+    .btn-secondary{border-color:var(--lcs-blue);color:var(--lcs-blue)}
+    .btn-muted{border-color:var(--line);color:var(--lcs-navy)}
+    .btn-danger{border-color:#f2b8b5;color:var(--danger)}
+    .btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+
+    .config-card{padding:0;overflow:hidden}
+    .config-header{
+      padding:20px 22px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg,#fff,#fbfdff);
+    }
+    .config-title{display:flex;align-items:center;gap:12px}
+    .config-title svg{color:var(--lcs-blue)}
+    .config-body{padding:20px 22px}
+    .component-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .component{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:18px;
+      background:#fff;
+    }
+    .component.wide{grid-column:1/-1}
+    .component-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+    .component-head h3{margin:0;font-size:1.02rem;color:var(--lcs-navy)}
+    .component .grid{gap:12px}
+    .helper{
+      background:#f0f8ec;
+      border:1px solid #c9e7bd;
+      color:#1f5121;
+      border-radius:12px;
+      padding:12px 14px;
+      font-size:.9rem;
+      margin-bottom:14px;
+    }
+    .config-actions{display:flex;justify-content:flex-end;margin-top:14px}
+
+    .notice{
+      padding:14px 16px;border-radius:13px;border:1px solid #c9e7bd;background:#f2fbef;color:#1f5121;font-weight:650;
+      margin:16px 0;
+    }
+    .notice.warning{background:#fff8e6;border-color:#f2d28a;color:#594000}
+
+    .review-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+    .summary-block{border:1px solid var(--line);border-radius:14px;background:#fff;padding:18px}
+    .summary-block h3{margin:0 0 12px;color:var(--lcs-navy);font-size:1rem}
+    .kv{display:grid;grid-template-columns:190px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid #edf1f6}
+    .kv:last-child{border-bottom:0}
+    .k{font-weight:800;color:#334155;font-size:.9rem}.v{color:#111827;font-size:.9rem;word-break:break-word}
+    .config-summary{grid-column:1/-1}
+    .config-summary-item{border:1px solid #e4ebf4;border-radius:13px;padding:14px;margin-top:10px;background:#fbfdff}
+    .review-actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-end;margin-top:18px}
+
+    .sticky-actions{
+      position:fixed;
+      left:0;right:0;bottom:0;
+      background:rgba(255,255,255,.93);
+      backdrop-filter:blur(12px);
+      border-top:1px solid var(--line);
+      z-index:30;
+    }
+    .sticky-inner{
+      max-width:var(--max);margin:0 auto;padding:14px 28px;display:flex;justify-content:space-between;gap:14px;align-items:center;
+    }
+    .footer-help{
+      background:var(--lcs-blue-dark);
+      color:#fff;
+      margin-top:20px;
+      border-radius:0 0 var(--radius) var(--radius);
+      padding:14px 18px;
+      display:grid;
+      grid-template-columns:1.2fr 1fr 1fr 1fr;
+      gap:12px;
+      font-size:.92rem;
+    }
+    .footer-help span{display:flex;align-items:center;gap:10px;color:#fff}.footer-help svg{color:#fff;flex:0 0 auto}
+
+    .toast{
+      position:fixed;right:18px;bottom:94px;z-index:60;
+      background:var(--lcs-navy);color:#fff;padding:13px 16px;border-radius:13px;box-shadow:var(--shadow);
+      opacity:0;transform:translateY(12px);pointer-events:none;transition:all .18s ease;
+      max-width:min(420px,calc(100vw - 36px));
+    }
+    .toast.show{opacity:1;transform:none}
+
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+    @media (max-width:1100px){
+      .radio-card-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .component-grid,.review-grid,.split-row{grid-template-columns:1fr}
+      .brand img{width:220px}.tagline{display:none}.footer-help{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width:760px){
+      .header-inner{padding:14px 18px}.save-strip{padding:0 18px 12px;justify-content:flex-start;flex-wrap:wrap}
+      main{padding:18px 18px 112px}.tool-title,.divider{display:none}.brand img{width:210px;max-width:78vw}
+      .progress{gap:10px}.step-pill{gap:8px}.step-number{width:36px;height:36px;font-size:.9rem}.step-desc{display:none}.step-title{font-size:.86rem}.step-pill:not(:last-child)::after{left:42px;top:18px}
+      .grid-2,.grid-3,.grid-4,.grid-6,.optional-layout{grid-template-columns:1fr}
+      .radio-card-grid{grid-template-columns:1fr 1fr}.choice-card{min-height:150px}
+      .scope-option{grid-template-columns:44px 1fr 22px}.configure-top,.sticky-inner{flex-direction:column;align-items:stretch}
+      .footer-help{grid-template-columns:1fr;border-radius:0}.kv{grid-template-columns:1fr;gap:2px}.review-actions{justify-content:stretch}.review-actions .btn,.sticky-inner .btn{justify-content:center;width:100%}
+    }
+    @media (max-width:480px){.radio-card-grid{grid-template-columns:1fr}.page-title{gap:12px}.title-icon{width:48px;height:48px}h1{font-size:1.45rem}.card{padding:16px}.config-header,.config-body{padding:16px}}
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand" aria-label="LiquidCool Solutions">
+        <img src="lcs-logo.png" alt="LiquidCool Solutions, Inc." onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
+        <span class="brand-fallback">LiquidCool Solutions, Inc.</span>
+        <span class="divider" aria-hidden="true"></span>
+        <span class="tool-title">LCS Project Quote Tool</span>
+      </div>
+      <div class="tagline">Advanced Cooling. <strong>Maximum Performance.</strong></div>
+    </div>
+    <div class="save-strip" aria-live="polite">
+      <span class="save-dot" aria-hidden="true"></span>
+      <span id="saveStatus">Draft saved automatically</span>
+      <button class="clear-link" type="button" id="clearDraftBtn">Clear saved draft</button>
+    </div>
+  </header>
+
+  <main>
+    <nav class="progress" aria-label="Quote tool progress">
+      <div class="step-pill active" data-progress="1"><span class="step-number">1</span><span><span class="step-title">Project Type</span><br><span class="step-desc">Tell us about your project</span></span></div>
+      <div class="step-pill" data-progress="2"><span class="step-number">2</span><span><span class="step-title">Configure</span><br><span class="step-desc">Build your ZP server configuration</span></span></div>
+      <div class="step-pill" data-progress="3"><span class="step-number">3</span><span><span class="step-title">Review &amp; Summary</span><br><span class="step-desc">Review and submit your quote</span></span></div>
+    </nav>
+
+    <form id="quoteForm" novalidate>
+      <section class="screen active" data-step="1">
+        <div class="page-title">
+          <div class="title-icon" aria-hidden="true">__ICON_CLIPBOARD__</div>
+          <div>
+            <h1>1. Project Type</h1>
+            <p>Help us understand your needs so we can provide the most accurate solution.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">__ICON_USER__<div><h2>Contact Information</h2></div></div>
+          <div class="grid grid-3">
+            <div class="field"><label for="fullName">Full Name <span class="req">*</span></label><input id="fullName" name="fullName" autocomplete="name" required placeholder="Enter your full name"><span class="error-text">Full name is required.</span></div>
+            <div class="field"><label for="email">Email Address <span class="req">*</span></label><input id="email" name="email" type="email" autocomplete="email" required placeholder="Enter your email address"><span class="error-text">Enter a valid email address.</span></div>
+            <div class="field"><label for="company">Company / Organization</label><input id="company" name="company" autocomplete="organization" placeholder="Enter your company name"></div>
+            <div class="field"><label for="phone">Phone Number</label><input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="(201) 555-0123"></div>
+            <div class="field" style="grid-column:span 2"><label for="jobTitle">Job Title</label><input id="jobTitle" name="jobTitle" autocomplete="organization-title" placeholder="Your role or title"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">__ICON_FILE__<div><h2>Project Overview</h2></div></div>
+          <div class="grid grid-2">
+            <div class="field"><label for="projectName">Project Name <span class="req">*</span></label><input id="projectName" name="projectName" required placeholder="Enter a name for your project"><span class="error-text">Project name is required.</span></div>
+            <div class="field"><label for="projectDescription">Project Description</label><textarea id="projectDescription" name="projectDescription" placeholder="Briefly describe your project or requirements"></textarea></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">__ICON_WAVE__<div><h2>Primary Application / Workload Focus <span class="req">*</span></h2><div class="card-sub">What is the top priority for the server workload?</div></div></div>
+          <div class="radio-card-grid" id="applicationCards">
+            <label class="choice-card">__ICON_AI__<h3>AI / Machine Learning</h3><p>Training, inference, and AI workloads</p><input type="radio" name="application" value="AI / Machine Learning" required><span class="radio-dot"></span></label>
+            <label class="choice-card">__ICON_SERVER_GREEN__<h3>HPC / Simulation</h3><p>Scientific computing, modeling, and simulations</p><input type="radio" name="application" value="HPC / Simulation" required><span class="radio-dot"></span></label>
+            <label class="choice-card">__ICON_BALANCE__<h3>General Compute (Balanced)</h3><p>Mixed workloads and general purpose computing</p><input type="radio" name="application" value="General Compute (Balanced)" required><span class="radio-dot"></span></label>
+            <label class="choice-card">__ICON_NETWORK__<h3>Network Focus</h3><p>Networking, security, firewall, and data routing</p><input type="radio" name="application" value="Network Focus" required><span class="radio-dot"></span></label>
+            <label class="choice-card">__ICON_MEMORY__<h3>Memory Focus</h3><p>In-memory databases and large-scale caching</p><input type="radio" name="application" value="Memory Focus" required><span class="radio-dot"></span></label>
+            <label class="choice-card">__ICON_STORAGE__<h3>Storage Focus</h3><p>Data storage, backup, and archival workloads</p><input type="radio" name="application" value="Storage Focus" required><span class="radio-dot"></span></label>
+          </div>
+          <span class="error-text" id="applicationError">Select one workload focus.</span>
+        </div>
+
+        <div class="split-row">
+          <div class="card">
+            <div class="card-head">__ICON_LAYERS__<div><h2>Scope of Solution Needed <span class="req">*</span></h2><div class="card-sub">What level of solution are you looking for?</div></div></div>
+            <div class="scope-list">
+              <label class="scope-option">__ICON_SERVER_BLUE__<span><span class="scope-title">Server Only</span><p>Standalone server(s) without rack or facility components</p></span><span class="scope-check"></span><input type="radio" name="solutionScope" value="Server Only" required></label>
+              <label class="scope-option">__ICON_RACK_GREEN__<span><span class="scope-title">Rack + Server Solution</span><p>Server(s) with rack, PDU, cooling distribution unit (CDU), and rack-level integration</p></span><span class="scope-check"></span><input type="radio" name="solutionScope" value="Rack + Server Solution" required></label>
+              <label class="scope-option">__ICON_BUILDING_BLUE__<span><span class="scope-title">Full Package (With Facility Loop)</span><p>Complete solution including facility loop, heat rejection, and infrastructure</p></span><span class="scope-check"></span><input type="radio" name="solutionScope" value="Full Package (With Facility Loop)" required></label>
+            </div>
+            <span class="error-text" id="scopeError">Select one solution scope.</span>
+          </div>
+
+          <div class="card">
+            <div class="card-head">__ICON_STAR__<div><h2>Optional: Additional Project Details</h2><div class="card-sub">Tell us more about your project when available.</div></div></div>
+            <div class="optional-layout">
+              <div class="field"><label for="voltagePreference">Voltage Preference</label><select id="voltagePreference" name="voltagePreference"><option value="">Select voltage</option><option>120V</option><option>208V</option><option>240V</option><option>277V</option><option>480V</option><option>Other / Not sure</option></select></div>
+              <div class="field"><label for="redundancyRequirement">Redundancy Requirement</label><select id="redundancyRequirement" name="redundancyRequirement"><option value="">Select redundancy level</option><option>None</option><option>N+1</option><option>2N</option><option>High Availability Cluster</option><option>Other / Not sure</option></select></div>
+              <div class="field"><label for="deploymentType">Deployment Type</label><select id="deploymentType" name="deploymentType"><option value="">Select deployment type</option><option>Retrofit / Existing Facility</option><option>Greenfield / New Facility</option><option>Pilot / Lab Evaluation</option><option>Expansion of Existing Deployment</option><option>Not sure</option></select></div>
+              <div class="field"><label for="targetDate">Timeline / Target Date</label><input id="targetDate" name="targetDate" type="date"></div>
+              <div class="field wide"><label for="budgetRange">Budget Range</label><select id="budgetRange" name="budgetRange"><option value="">Select budget range</option><option>Under $50K</option><option>$50K - $250K</option><option>$250K - $1M</option><option>$1M - $5M</option><option>$5M - $10M</option><option>Over $10M</option><option>Prefer not to say</option></select></div>
+              <div class="field wide"><label for="additionalProjectNotes">Additional Notes</label><textarea id="additionalProjectNotes" name="additionalProjectNotes" placeholder="Retrofit or greenfield deployment, other preferences."></textarea></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" data-step="2">
+        <div class="configure-top">
+          <div>
+            <h1>Configure your system</h1>
+            <p>Select the hardware components and options for your ZP server configuration.</p>
+          </div>
+          <button type="button" class="btn btn-secondary" id="addConfigBtn">__ICON_PLUS__ Add another server configuration</button>
+        </div>
+        <div class="notice">Start with one server configuration. Add another configuration only when a different ZP server build is required.</div>
+        <div id="configContainer"></div>
+      </section>
+
+      <section class="screen" data-step="3">
+        <div class="page-title">
+          <div class="title-icon" aria-hidden="true">__ICON_REVIEW__</div>
+          <div>
+            <h1>Review &amp; Summary</h1>
+            <p>Review the information below before submitting or downloading the quote request.</p>
+          </div>
+        </div>
+        <div class="notice warning" id="submitNotice">Submission endpoint is not connected yet. For now, use Download JSON or connect the endpoint in the script before going live.</div>
+        <div class="review-grid" id="reviewGrid"></div>
+        <div class="review-actions">
+          <button type="button" class="btn btn-muted" id="copySummaryBtn">Copy summary</button>
+          <button type="button" class="btn btn-secondary" id="downloadJsonBtn">Download JSON</button>
+          <button type="button" class="btn btn-primary" id="submitBtn">Submit Request</button>
+        </div>
+      </section>
+    </form>
+  </main>
+
+  <div class="sticky-actions">
+    <div class="sticky-inner">
+      <button type="button" class="btn btn-muted" id="backBtn">Back</button>
+      <button type="button" class="btn btn-primary" id="nextBtn">Next: Configure</button>
+    </div>
+  </div>
+
+  <div class="footer-help">
+    <span>__ICON_HEADSET__ <strong>Need help?</strong> Contact our liquid cooling experts.</span>
+    <span>__ICON_MAIL__ sales@liquidcoolsolutions.com</span>
+    <span>__ICON_PHONE__ (508) 964-3200</span>
+    <span>__ICON_GLOBE__ liquidcoolsolutions.com</span>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const SUBMISSION_ENDPOINT = "";
+    const STORAGE_KEY = "lcs_quote_tool_v1";
+
+    const optionData = {
+      zpSeries: ["10xx Series", "30xx Series", "50xx Series"],
+      modelsBySeries: {
+        "10xx Series": ["ZPS1210", "ZPS1212", "ZPS1220", "Other / Not sure"],
+        "30xx Series": ["ZPS3210", "ZPS3220", "Other / Not sure"],
+        "50xx Series": ["ZPS5310", "ZPS5320", "Other / Not sure"]
+      },
+      modelDefaults: {
+        "ZPS1210": { vendor:"Intel", generation:"Intel Xeon Scalable 3rd Gen" },
+        "ZPS1212": { vendor:"Intel", generation:"Intel Xeon Scalable 3rd Gen" },
+        "ZPS1220": { vendor:"AMD", generation:"AMD EPYC" },
+        "ZPS3210": { vendor:"Intel", generation:"Intel Xeon Scalable 4th Gen" },
+        "ZPS3220": { vendor:"Intel", generation:"Intel Xeon 5th Gen" },
+        "ZPS5310": { vendor:"Intel", generation:"Intel Xeon Scalable 4th Gen" },
+        "ZPS5320": { vendor:"Intel", generation:"Intel Xeon 5th Gen" }
+      },
+      cpuVendors:["Intel", "AMD", "Other / Not sure"],
+      cpuGenerations:["Intel Xeon Scalable 3rd Gen", "Intel Xeon Scalable 4th Gen", "Intel Xeon 5th Gen", "AMD EPYC", "Other / Not sure"],
+      cores:["8", "16", "24", "32", "40", "48", "64", "96", "Other / Not sure"],
+      memorySpeed:["DDR4-3200", "DDR5-4800", "DDR5-5600", "Other / Not sure"],
+      dimmCount:["4", "8", "12", "16", "24", "32", "Other / Not sure"],
+      memoryPerDimm:["32GB", "64GB", "128GB", "256GB", "Other / Not sure"],
+      gpuName:["Not applicable", "NVIDIA L40S", "NVIDIA H100", "NVIDIA H200", "NVIDIA RTX PRO 6000 Blackwell Server Edition", "AMD Instinct", "Other / Not sure"],
+      gpuCount:["0", "1", "2", "4", "8", "Other / Not sure"],
+      osStorage:["500GB OS (1x M.2 NVMe)", "1TB OS (1x M.2 NVMe)", "500GB OS RAID1 (2x M.2 NVMe)", "1TB OS RAID1 (2x M.2 NVMe)", "Other / Not sure"],
+      storageMedia:["NVMe", "SATA", "Other / Not sure"],
+      storageCount:["1", "2", "4", "8", "12", "16", "24", "Other / Not sure"],
+      driveCapacity:["500GB", "1TB", "2TB", "4TB", "8TB", "15.36TB", "30.72TB", "Other / Not sure"],
+      raid:["None", "RAID 0", "RAID 1", "RAID 5", "RAID 10", "Other / Not sure"],
+      network:["1GbE", "10GbE", "25GbE", "100GbE", "200GbE", "400GbE", "Other / Not sure"]
+    };
+
+    let state = {
+      step: 1,
+      project: {},
+      configurations: [blankConfig()]
+    };
+
+    function blankConfig(){
+      return {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        quantity: "1",
+        zpSeries: "",
+        zpModel: "",
+        cpuVendor: "",
+        cpuGeneration: "",
+        coresPerCpu: "",
+        memorySpeed: "",
+        dimmCount: "",
+        memoryPerDimm: "",
+        gpuName: "",
+        gpuCount: "0",
+        osStorage: "",
+        storageMedia: "",
+        storageCount: "1",
+        driveCapacity: "",
+        raid: "",
+        networkOption: "",
+        additionalRequirements: ""
+      };
+    }
+
+    const qs = (s, r=document) => r.querySelector(s);
+    const qsa = (s, r=document) => Array.from(r.querySelectorAll(s));
+
+    function icon(name, cls=""){
+      const common = `width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="${cls}" aria-hidden="true"`;
+      const icons = {
+        clipboard:`<svg ${common}><path d="M9 4h6l1 2h3v15H5V6h3l1-2Z"/><path d="M9 10h6"/><path d="M9 14h6"/><path d="M9 18h4"/></svg>`,
+        user:`<svg ${common}><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>`,
+        file:`<svg ${common}><path d="M6 3h8l4 4v14H6Z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>`,
+        wave:`<svg ${common}><path d="M3 13h3l2-7 4 14 3-9h2l2 5h2"/></svg>`,
+        ai:`<svg ${common} class="icon-blue"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/><path d="M9 14V9h3a2 2 0 0 1 0 4H9m6-4v5"/></svg>`,
+        serverGreen:`<svg ${common} class="icon-green"><rect x="4" y="4" width="16" height="5" rx="1"/><rect x="4" y="15" width="16" height="5" rx="1"/><path d="M7 6.5h.01M7 17.5h.01M11 9v6M17 9v6"/></svg>`,
+        balance:`<svg ${common} class="icon-blue"><path d="M12 3v18"/><path d="M5 8h14"/><path d="m6 8-3 6h6L6 8Z"/><path d="m18 8-3 6h6l-3-6Z"/></svg>`,
+        network:`<svg ${common} class="icon-purple"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><circle cx="12" cy="14" r="2"/><path d="M12 7v5M10.4 15.3 6.6 17M13.6 15.3 17.4 17"/></svg>`,
+        memory:`<svg ${common} class="icon-orange"><rect x="4" y="7" width="16" height="10" rx="1"/><path d="M7 7V4M11 7V4M15 7V4M7 20v-3M11 20v-3M15 20v-3M20 10h2M20 14h2M2 10h2M2 14h2"/></svg>`,
+        storage:`<svg ${common} class="icon-teal"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg>`,
+        layers:`<svg ${common}><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></svg>`,
+        serverBlue:`<svg ${common} class="icon-blue"><rect x="3" y="4" width="18" height="5" rx="1"/><rect x="3" y="15" width="18" height="5" rx="1"/><path d="M7 6.5h.01M7 17.5h.01M17 6.5h.01M17 17.5h.01"/></svg>`,
+        rackGreen:`<svg ${common} class="icon-green"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M8 7h8M8 11h8M8 15h8M8 19h8"/><path d="M3 21h18"/></svg>`,
+        buildingBlue:`<svg ${common} class="icon-blue"><path d="M4 21V9l8-5 8 5v12"/><path d="M9 21v-6h6v6"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg>`,
+        star:`<svg ${common}><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z"/></svg>`,
+        plus:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`,
+        review:`<svg ${common}><path d="M4 5h16v14H4Z"/><path d="m8 12 2.5 2.5L16 9"/></svg>`,
+        cpu:`<svg ${common} class="icon-green"><rect x="7" y="7" width="10" height="10" rx="1"/><path d="M9 2v5M15 2v5M9 17v5M15 17v5M2 9h5M2 15h5M17 9h5M17 15h5"/></svg>`,
+        gpu:`<svg ${common} class="icon-green"><rect x="4" y="7" width="16" height="10" rx="2"/><path d="M7 11h3M14 11h3M8 4v3M16 4v3M8 17v3M16 17v3"/></svg>`,
+        networkBlue:`<svg ${common} class="icon-blue"><path d="M5 12h14"/><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v5"/></svg>`,
+        headset:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13a8 8 0 0 1 16 0"/><path d="M4 13v4a2 2 0 0 0 2 2h2v-8H6a2 2 0 0 0-2 2ZM20 13v4a2 2 0 0 1-2 2h-2v-8h2a2 2 0 0 1 2 2Z"/></svg>`,
+        mail:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v12H4Z"/><path d="m4 7 8 6 8-6"/></svg>`,
+        phone:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7A2 2 0 0 1 22 16.9Z"/></svg>`,
+        globe:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>`
+      };
+      return icons[name] || "";
+    }
+
+    document.body.innerHTML = document.body.innerHTML
+      .replaceAll("__ICON_CLIPBOARD__", icon("clipboard"))
+      .replaceAll("__ICON_USER__", icon("user"))
+      .replaceAll("__ICON_FILE__", icon("file"))
+      .replaceAll("__ICON_WAVE__", icon("wave"))
+      .replaceAll("__ICON_AI__", icon("ai"))
+      .replaceAll("__ICON_SERVER_GREEN__", icon("serverGreen"))
+      .replaceAll("__ICON_BALANCE__", icon("balance"))
+      .replaceAll("__ICON_NETWORK__", icon("network"))
+      .replaceAll("__ICON_MEMORY__", icon("memory"))
+      .replaceAll("__ICON_STORAGE__", icon("storage"))
+      .replaceAll("__ICON_LAYERS__", icon("layers"))
+      .replaceAll("__ICON_SERVER_BLUE__", icon("serverBlue"))
+      .replaceAll("__ICON_RACK_GREEN__", icon("rackGreen"))
+      .replaceAll("__ICON_BUILDING_BLUE__", icon("buildingBlue"))
+      .replaceAll("__ICON_STAR__", icon("star"))
+      .replaceAll("__ICON_PLUS__", icon("plus"))
+      .replaceAll("__ICON_REVIEW__", icon("review"))
+      .replaceAll("__ICON_HEADSET__", icon("headset"))
+      .replaceAll("__ICON_MAIL__", icon("mail"))
+      .replaceAll("__ICON_PHONE__", icon("phone"))
+      .replaceAll("__ICON_GLOBE__", icon("globe"));
+
+    function optionTags(arr, selected="", placeholder="Select option"){
+      return `<option value="">${placeholder}</option>` + arr.map(v => `<option ${v===selected ? "selected" : ""}>${escapeHtml(v)}</option>`).join("");
+    }
+    function escapeHtml(v){return String(v ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));}
+
+    function renderConfigs(){
+      const container = qs("#configContainer");
+      container.innerHTML = state.configurations.map((cfg, index) => configTemplate(cfg,index)).join("");
+      bindConfigEvents();
+      updateGpuRules();
+    }
+
+    function configTemplate(cfg,index){
+      const models = cfg.zpSeries ? optionData.modelsBySeries[cfg.zpSeries] || [] : [];
+      return `
+      <div class="card config-card" data-config-id="${cfg.id}">
+        <div class="config-header">
+          <div class="config-title">${icon("serverBlue")}<div><h2>Server Configuration ${index+1}</h2><div class="card-sub">Complete one ZP server configuration at a time.</div></div></div>
+          ${state.configurations.length > 1 ? `<button type="button" class="btn btn-danger remove-config" data-id="${cfg.id}">Remove</button>` : ""}
+        </div>
+        <div class="config-body">
+          <div class="helper">Required fields are highlighted through validation before review. For GPU servers, choose the 50xx Series and complete the GPU fields.</div>
+          <div class="component wide">
+            <div class="component-head">${icon("serverBlue")}<h3>ZP Model</h3></div>
+            <div class="grid grid-4">
+              <div class="field"><label>Quantity <span class="req">*</span></label><input data-field="quantity" type="number" min="1" step="1" value="${escapeHtml(cfg.quantity)}" required><span class="error-text">Enter quantity.</span></div>
+              <div class="field"><label>ZP Series <span class="req">*</span></label><select data-field="zpSeries" required>${optionTags(optionData.zpSeries,cfg.zpSeries,"Select series")}</select><span class="error-text">Select ZP series.</span></div>
+              <div class="field"><label>Choose your ZP Model <span class="req">*</span></label><select data-field="zpModel" required ${cfg.zpSeries ? "" : "disabled"}>${optionTags(models,cfg.zpModel,"Select model")}</select><span class="error-text">Select ZP model.</span></div>
+              <div class="field"><label>Configuration Note</label><input data-field="configurationNote" value="${escapeHtml(cfg.configurationNote || "")}" placeholder="Example: production cluster, test node"></div>
+            </div>
+          </div>
+          <div class="component-grid">
+            <div class="component">
+              <div class="component-head">${icon("cpu")}<h3>Processor</h3></div>
+              <div class="grid grid-3">
+                <div class="field"><label>CPU Vendor <span class="req">*</span></label><select data-field="cpuVendor" required>${optionTags(optionData.cpuVendors,cfg.cpuVendor,"Select vendor")}</select><span class="error-text">Select CPU vendor.</span></div>
+                <div class="field"><label>CPU Generation <span class="req">*</span></label><select data-field="cpuGeneration" required>${optionTags(optionData.cpuGenerations,cfg.cpuGeneration,"Select generation")}</select><span class="error-text">Select CPU generation.</span></div>
+                <div class="field"><label>Cores per CPU <span class="req">*</span></label><select data-field="coresPerCpu" required>${optionTags(optionData.cores,cfg.coresPerCpu,"Select cores")}</select><span class="error-text">Select cores.</span></div>
+              </div>
+            </div>
+            <div class="component">
+              <div class="component-head">${icon("gpu")}<h3>GPU <span class="card-sub">required for 50xx</span></h3></div>
+              <div class="grid grid-2">
+                <div class="field"><label>GPU Name</label><select data-field="gpuName">${optionTags(optionData.gpuName,cfg.gpuName,"Select GPU")}</select><span class="error-text">Select GPU for 50xx Series.</span></div>
+                <div class="field"><label>GPU Count</label><select data-field="gpuCount">${optionTags(optionData.gpuCount,cfg.gpuCount,"Select count")}</select><span class="error-text">Select GPU count.</span></div>
+              </div>
+            </div>
+            <div class="component wide">
+              <div class="component-head">${icon("memory")}<h3>Memory</h3></div>
+              <div class="grid grid-3">
+                <div class="field"><label>Memory Speed <span class="req">*</span></label><select data-field="memorySpeed" required>${optionTags(optionData.memorySpeed,cfg.memorySpeed,"Select speed")}</select><span class="error-text">Select memory speed.</span></div>
+                <div class="field"><label>DIMM Count <span class="req">*</span></label><select data-field="dimmCount" required>${optionTags(optionData.dimmCount,cfg.dimmCount,"Select count")}</select><span class="error-text">Select DIMM count.</span></div>
+                <div class="field"><label>Memory per DIMM <span class="req">*</span></label><select data-field="memoryPerDimm" required>${optionTags(optionData.memoryPerDimm,cfg.memoryPerDimm,"Select capacity")}</select><span class="error-text">Select memory capacity.</span></div>
+              </div>
+            </div>
+            <div class="component wide">
+              <div class="component-head">${icon("storage")}<h3>Storage</h3></div>
+              <div class="grid grid-6">
+                <div class="field"><label>OS Storage (M.2) <span class="req">*</span></label><select data-field="osStorage" required>${optionTags(optionData.osStorage,cfg.osStorage,"Select option")}</select><span class="error-text">Select OS storage.</span></div>
+                <div class="field"><label>Storage Media <span class="req">*</span></label><select data-field="storageMedia" required>${optionTags(optionData.storageMedia,cfg.storageMedia,"Select media")}</select><span class="error-text">Select media.</span></div>
+                <div class="field"><label>Storage Count <span class="req">*</span></label><select data-field="storageCount" required>${optionTags(optionData.storageCount,cfg.storageCount,"Select count")}</select><span class="error-text">Select count.</span></div>
+                <div class="field"><label>Drive Capacity <span class="req">*</span></label><select data-field="driveCapacity" required>${optionTags(optionData.driveCapacity,cfg.driveCapacity,"Select capacity")}</select><span class="error-text">Select capacity.</span></div>
+                <div class="field"><label>RAID</label><select data-field="raid">${optionTags(optionData.raid,cfg.raid,"Select RAID")}</select></div>
+                <div class="field"><label>Network Option <span class="req">*</span></label><select data-field="networkOption" required>${optionTags(optionData.network,cfg.networkOption,"Select option")}</select><span class="error-text">Select network option.</span></div>
+              </div>
+            </div>
+            <div class="component wide">
+              <div class="component-head">${icon("file")}<h3>Additional Requirements</h3></div>
+              <textarea data-field="additionalRequirements" placeholder="Any special hardware, cooling, facility, or integration requirements">${escapeHtml(cfg.additionalRequirements)}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    function bindConfigEvents(){
+      qsa("[data-config-id] [data-field]").forEach(el => {
+        el.addEventListener("input", e => updateConfigField(e));
+        el.addEventListener("change", e => updateConfigField(e));
+      });
+      qsa(".remove-config").forEach(btn => btn.addEventListener("click", () => {
+        state.configurations = state.configurations.filter(c => c.id !== btn.dataset.id);
+        renderConfigs();
+        persist();
+      }));
+    }
+
+    function updateConfigField(e){
+      const card = e.target.closest("[data-config-id]");
+      const cfg = state.configurations.find(c => c.id === card.dataset.configId);
+      const field = e.target.dataset.field;
+      cfg[field] = e.target.value;
+      if(field === "zpSeries"){
+        cfg.zpModel = "";
+        if(cfg.zpSeries !== "50xx Series"){
+          cfg.gpuName = "Not applicable";
+          cfg.gpuCount = "0";
+        }
+        renderConfigs();
+      }
+      if(field === "zpModel"){
+        const defaults = optionData.modelDefaults[cfg.zpModel];
+        if(defaults){ cfg.cpuVendor = defaults.vendor; cfg.cpuGeneration = defaults.generation; renderConfigs(); }
+      }
+      if(field === "gpuName" && cfg.gpuName === "Not applicable") cfg.gpuCount = "0";
+      clearFieldError(e.target);
+      updateGpuRules();
+      persist();
+    }
+
+    function updateGpuRules(){
+      qsa("[data-config-id]").forEach(card => {
+        const cfg = state.configurations.find(c => c.id === card.dataset.configId);
+        const gpuName = qs('[data-field="gpuName"]', card);
+        const gpuCount = qs('[data-field="gpuCount"]', card);
+        if(cfg.zpSeries !== "50xx Series"){
+          gpuName.value = "Not applicable";
+          gpuCount.value = "0";
+          gpuName.disabled = true;
+          gpuCount.disabled = true;
+        } else {
+          gpuName.disabled = false;
+          gpuCount.disabled = false;
+        }
+      });
+    }
+
+    function collectProject(){
+      const data = {};
+      qsa("#quoteForm [name]").forEach(el => {
+        if(el.type === "radio") { if(el.checked) data[el.name] = el.value; }
+        else if(!el.closest("[data-config-id]")) data[el.name] = el.value;
+      });
+      state.project = data;
+    }
+
+    function restoreProject(){
+      Object.entries(state.project || {}).forEach(([k,v]) => {
+        qsa(`[name="${CSS.escape(k)}"]`).forEach(el => {
+          if(el.closest("[data-config-id]")) return;
+          if(el.type === "radio") el.checked = el.value === v;
+          else el.value = v;
+        });
+      });
+    }
+
+    function validateStep(step){
+      collectProject();
+      let valid = true;
+      clearAllErrors();
+      if(step === 1){
+        ["fullName","email","projectName"].forEach(name => {
+          const el = qs(`[name="${name}"]`);
+          if(!el.value.trim() || (name === "email" && !el.checkValidity())){markError(el);valid=false;}
+        });
+        if(!state.project.application){ qs("#applicationError").classList.add("show"); valid=false; }
+        if(!state.project.solutionScope){ qs("#scopeError").classList.add("show"); valid=false; }
+      }
+      if(step === 2){
+        state.configurations.forEach(cfg => {
+          const card = qs(`[data-config-id="${cfg.id}"]`);
+          const required = ["quantity","zpSeries","zpModel","cpuVendor","cpuGeneration","coresPerCpu","memorySpeed","dimmCount","memoryPerDimm","osStorage","storageMedia","storageCount","driveCapacity","networkOption"];
+          required.forEach(f => {
+            const el = qs(`[data-field="${f}"]`, card);
+            if(!String(cfg[f] || "").trim()){markError(el);valid=false;}
+          });
+          if(Number(cfg.quantity) < 1){markError(qs('[data-field="quantity"]',card));valid=false;}
+          if(cfg.zpSeries === "50xx Series"){
+            if(!cfg.gpuName || cfg.gpuName === "Not applicable"){markError(qs('[data-field="gpuName"]',card));valid=false;}
+            if(!cfg.gpuCount || cfg.gpuCount === "0"){markError(qs('[data-field="gpuCount"]',card));valid=false;}
+          }
+        });
+      }
+      if(!valid){
+        const first = qs(".error, .error-text.show");
+        first?.scrollIntoView({behavior:"smooth", block:"center"});
+        toast("Please complete the highlighted required fields.");
+      }
+      return valid;
+    }
+
+    function markError(el){ if(el){el.classList.add("error"); const err=el.parentElement.querySelector(".error-text"); if(err) err.classList.add("show");} }
+    function clearFieldError(el){ el.classList.remove("error"); const err=el.parentElement.querySelector(".error-text"); if(err) err.classList.remove("show"); }
+    function clearAllErrors(){ qsa(".error").forEach(el => el.classList.remove("error")); qsa(".error-text.show").forEach(el => el.classList.remove("show")); }
+
+    function goToStep(step){
+      state.step = Math.max(1, Math.min(3, step));
+      qsa(".screen").forEach(s => s.classList.toggle("active", Number(s.dataset.step) === state.step));
+      qsa(".step-pill").forEach(p => {
+        const n = Number(p.dataset.progress);
+        p.classList.toggle("active", n === state.step);
+        p.classList.toggle("done", n < state.step);
+      });
+      qs("#backBtn").style.visibility = state.step === 1 ? "hidden" : "visible";
+      qs("#nextBtn").textContent = state.step === 1 ? "Next: Configure" : state.step === 2 ? "Next: Review" : "Back to Configure";
+      if(state.step === 3){renderReview(); qs("#nextBtn").style.display="none";} else qs("#nextBtn").style.display="inline-flex";
+      window.scrollTo({top:0,behavior:"smooth"});
+      persist();
+    }
+
+    function renderReview(){
+      collectProject();
+      const p = state.project;
+      const projectRows = [
+        ["Full Name",p.fullName],["Email",p.email],["Company",p.company],["Phone",p.phone],["Job Title",p.jobTitle],
+        ["Project Name",p.projectName],["Project Description",p.projectDescription],["Application Focus",p.application],["Solution Scope",p.solutionScope]
+      ];
+      const optionalRows = [["Voltage Preference",p.voltagePreference],["Redundancy",p.redundancyRequirement],["Deployment Type",p.deploymentType],["Timeline / Target Date",p.targetDate],["Budget Range",p.budgetRange],["Additional Notes",p.additionalProjectNotes]];
+      qs("#reviewGrid").innerHTML = `
+        <div class="summary-block"><h3>Project & Contact</h3>${rows(projectRows)}</div>
+        <div class="summary-block"><h3>Optional Details</h3>${rows(optionalRows)}</div>
+        <div class="summary-block config-summary"><h3>Server Configuration(s)</h3>${state.configurations.map((cfg,i)=>configSummary(cfg,i)).join("")}</div>
+      `;
+      qs("#submitNotice").style.display = SUBMISSION_ENDPOINT ? "none" : "block";
+    }
+    function rows(items){return items.map(([k,v]) => `<div class="kv"><div class="k">${escapeHtml(k)}</div><div class="v">${escapeHtml(v || "Not provided")}</div></div>`).join("");}
+    function configSummary(cfg,i){
+      const rowsData = [["Quantity",cfg.quantity],["ZP Series",cfg.zpSeries],["ZP Model",cfg.zpModel],["CPU",`${cfg.cpuVendor || ""} ${cfg.cpuGeneration || ""}`.trim()],["Cores per CPU",cfg.coresPerCpu],["GPU",`${cfg.gpuName || "Not applicable"} ${cfg.gpuCount && cfg.gpuCount !== "0" ? `(${cfg.gpuCount})` : ""}`.trim()],["Memory",`${cfg.dimmCount || ""} x ${cfg.memoryPerDimm || ""} ${cfg.memorySpeed || ""}`.trim()],["OS Storage",cfg.osStorage],["Data Storage",`${cfg.storageCount || ""} x ${cfg.driveCapacity || ""} ${cfg.storageMedia || ""}`.trim()],["RAID",cfg.raid],["Network",cfg.networkOption],["Additional Requirements",cfg.additionalRequirements]];
+      return `<div class="config-summary-item"><h3>Server Configuration ${i+1}</h3>${rows(rowsData)}</div>`;
+    }
+
+    function payload(){collectProject(); return { submittedAt:new Date().toISOString(), project:state.project, configurations:state.configurations };}
+    function summaryText(){
+      const data = payload();
+      const lines = ["LCS Project Quote Request", "", "Project & Contact:"];
+      Object.entries(data.project).forEach(([k,v]) => { if(v) lines.push(`${k}: ${v}`); });
+      lines.push("", "Configurations:");
+      data.configurations.forEach((c,i) => { lines.push(`Configuration ${i+1}:`); Object.entries(c).forEach(([k,v]) => { if(k !== "id" && v) lines.push(`  ${k}: ${v}`); }); });
+      return lines.join("\n");
+    }
+
+    function downloadJson(){
+      const blob = new Blob([JSON.stringify(payload(), null, 2)], {type:"application/json"});
+      const a = document.createElement("a");
+      const projectName = state.project.projectName || "lcs-quote-request";
+      a.href = URL.createObjectURL(blob);
+      a.download = `${projectName.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"")}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast("Quote request JSON downloaded.");
+    }
+
+    async function submitRequest(){
+      if(!SUBMISSION_ENDPOINT){
+        toast("Submission endpoint is not connected yet. Download the JSON or connect Formspree, Netlify, or your CRM endpoint.");
+        return;
+      }
+      const btn = qs("#submitBtn");
+      btn.disabled = true;
+      btn.textContent = "Submitting...";
+      try{
+        const res = await fetch(SUBMISSION_ENDPOINT, {method:"POST", headers:{"Content-Type":"application/json","Accept":"application/json"}, body:JSON.stringify(payload())});
+        if(!res.ok) throw new Error("Submission failed");
+        localStorage.removeItem(STORAGE_KEY);
+        toast("Quote request submitted successfully.");
+        btn.textContent = "Submitted";
+      } catch(err){
+        toast("Submission failed. Your draft is still saved locally. Download JSON as backup.");
+        btn.disabled = false;
+        btn.textContent = "Submit Request";
+      }
+    }
+
+    function persist(){
+      collectProject();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      const t = new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+      qs("#saveStatus").textContent = `Draft saved automatically at ${t}`;
+    }
+    function loadDraft(){
+      try{
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if(saved && saved.project && Array.isArray(saved.configurations)) state = saved;
+      }catch(e){}
+      restoreProject();
+      renderConfigs();
+      goToStep(state.step || 1);
+    }
+
+    function toast(message){
+      const el = qs("#toast");
+      el.textContent = message;
+      el.classList.add("show");
+      setTimeout(()=>el.classList.remove("show"), 3600);
+    }
+
+    qs("#nextBtn").addEventListener("click", () => {
+      if(state.step === 1 && validateStep(1)) goToStep(2);
+      else if(state.step === 2 && validateStep(2)) goToStep(3);
+    });
+    qs("#backBtn").addEventListener("click", () => goToStep(state.step - 1));
+    qs("#addConfigBtn").addEventListener("click", () => { state.configurations.push(blankConfig()); renderConfigs(); persist(); toast("New server configuration added."); });
+    qs("#downloadJsonBtn").addEventListener("click", downloadJson);
+    qs("#copySummaryBtn").addEventListener("click", async () => { await navigator.clipboard.writeText(summaryText()); toast("Summary copied to clipboard."); });
+    qs("#submitBtn").addEventListener("click", submitRequest);
+    qs("#clearDraftBtn").addEventListener("click", () => {
+      if(confirm("Clear the saved draft from this browser?")){
+        localStorage.removeItem(STORAGE_KEY);
+        state = {step:1, project:{}, configurations:[blankConfig()]};
+        qs("#quoteForm").reset();
+        renderConfigs();
+        goToStep(1);
+        toast("Saved draft cleared.");
+      }
+    });
+
+    qsa("#quoteForm input, #quoteForm select, #quoteForm textarea").forEach(el => {
+      if(el.closest("[data-config-id]")) return;
+      el.addEventListener("input", () => { clearFieldError(el); persist(); });
+      el.addEventListener("change", () => { clearFieldError(el); persist(); });
+    });
+
+    window.addEventListener("beforeunload", persist);
+    loadDraft();
+  </script>
+</body>
+</html>
