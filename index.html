@@ -31,7 +31,9 @@
     }
 
     *{box-sizing:border-box}
+
     html{scroll-behavior:smooth}
+
     body{
       margin:0;
       font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
@@ -47,7 +49,6 @@
     a{color:inherit;text-decoration:none}
     button,input,select,textarea{font:inherit}
     button{cursor:pointer}
-    .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
 
     .topbar{
       position:sticky;
@@ -165,7 +166,7 @@
       gap:30px;
       align-items:center;
       padding:34px 42px;
-      min-height:360px;
+      min-height:350px;
     }
 
     .eyebrow{
@@ -194,8 +195,8 @@
 
     .landing h1{
       margin:15px 0 12px;
-      font-size:clamp(2.25rem,4.1vw,4.25rem);
-      line-height:.98;
+      font-size:clamp(2.15rem,3.85vw,4rem);
+      line-height:1;
       letter-spacing:-.04em;
       color:#fff;
       max-width:760px;
@@ -216,17 +217,9 @@
     }
 
     .hero-actions .btn{
-      min-width:145px;
-      padding:11px 16px;
+      min-width:150px;
+      padding:12px 18px;
     }
-
-    .btn-ghost{
-      background:rgba(255,255,255,.08);
-      color:#fff;
-      border-color:rgba(255,255,255,.28);
-    }
-
-    .btn-ghost:hover{background:rgba(255,255,255,.14)}
 
     .solution-chips{
       display:flex;
@@ -247,7 +240,7 @@
 
     .hero-visual{
       position:relative;
-      min-height:280px;
+      min-height:270px;
       border:1px solid rgba(255,255,255,.14);
       border-radius:22px;
       background:
@@ -263,7 +256,7 @@
       display:block;
       width:auto;
       max-width:92%;
-      max-height:310px;
+      max-height:300px;
       object-fit:contain;
       filter:drop-shadow(0 24px 34px rgba(0,0,0,.42));
     }
@@ -642,7 +635,7 @@
   <div class="topbar-inner">
     <div class="brand-row">
       <a class="logo-link" href="https://liquidcoolsolutions.com/" target="_blank" rel="noopener" aria-label="Open LiquidCool Solutions website">
-        <img src="./assets/LCS-LOGO.png" alt="LiquidCool Solutions, Inc." onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
+        <img src="./LCS-LOGO.png" alt="LiquidCool Solutions, Inc." onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
         <span class="logo-fallback">LiquidCool Solutions, Inc.</span>
       </a>
       <span class="divider" aria-hidden="true"></span>
@@ -674,7 +667,6 @@
 
         <div class="hero-actions">
           <a class="btn btn-primary" href="#quoteForm">Start quote</a>
-          <a class="btn btn-ghost" href="#solutionScope">Review solution scope</a>
         </div>
 
         <div class="solution-chips" aria-label="Solution areas">
@@ -687,7 +679,7 @@
 
       <div class="hero-visual" aria-label="LiquidCool Solutions ZPS rack product visual">
         <img
-          src="./assets/lcs-zps-rack-hero.jpg"
+          src="./lcs-zps-rack-hero.jpg"
           alt="LiquidCool Solutions ZPS rack with liquid-cooled servers"
           loading="eager"
           onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
@@ -695,7 +687,7 @@
 
         <div class="hero-image-fallback" style="display:none;">
           <strong>Hero image missing</strong>
-          <span>Upload: assets/lcs-zps-rack-hero.jpg</span>
+          <span>Expected file: lcs-zps-rack-hero.jpg</span>
         </div>
 
         <div class="visual-badge">
@@ -1000,7 +992,7 @@
 <footer class="footer">
   <div class="footer-inner">
     <a href="https://liquidcoolsolutions.com/" target="_blank" rel="noopener">
-      <img src="./assets/LCS-LOGO.png" alt="LiquidCool Solutions" onerror="this.style.display='none'" />
+      <img src="./LCS-LOGO.png" alt="LiquidCool Solutions" onerror="this.style.display='none'" />
       <strong>LiquidCool Solutions</strong>
     </a>
 
